@@ -1,50 +1,105 @@
-# 🚀 Deploying Brizo on Vercel
+# 🚀 Brizo Vercel Deployment Guide
 
-This guide will help you deploy Brizo to Vercel for production use.
+Complete guide for deploying Brizo on Vercel with both frontend and backend.
 
 ## 📋 Prerequisites
 
-1. **Vercel Account**: Sign up at [vercel.com](https://vercel.com)
-2. **Vercel CLI**: Install with `npm i -g vercel`
-3. **Git Repository**: Your code should be in a Git repo (GitHub, GitLab, etc.)
+- ✅ GitHub repository connected to Vercel
+- ✅ Vercel account (free tier works)
+- ✅ Node.js 18+ installed locally
+- ✅ Git repository up to date
 
-## 🎯 Deployment Options
+## 🔧 Quick Fix for Environment Variables
 
-### Option 1: Frontend Only (Recommended for Demo)
+**IMPORTANT**: Before deploying, update these files with your actual backend URL:
 
-Deploy just the frontend to Vercel and keep the backend running locally or on another service.
-
-```bash
-# 1. Navigate to frontend directory
-cd frontend
-
-# 2. Deploy to Vercel
-vercel --prod
-
-# 3. Set environment variable for your backend URL
-vercel env add NEXT_PUBLIC_API_URL
-# Enter your backend URL (e.g., https://your-backend.vercel.app)
+1. **Root `vercel.json`**:
+```json
+"env": {
+  "NEXT_PUBLIC_API_URL": "https://your-backend-url.vercel.app"
+}
 ```
 
-### Option 2: Full Stack (Frontend + Backend)
-
-Deploy both frontend and backend to Vercel.
-
-```bash
-# 1. Deploy backend first
-cd backend
-vercel --prod
-
-# 2. Copy the backend URL from the output
-# 3. Deploy frontend with backend URL
-cd ../frontend
-echo "NEXT_PUBLIC_API_URL=https://your-backend-url.vercel.app" > .env.local
-vercel --prod
+2. **`frontend/vercel.json`**:
+```json
+"env": {
+  "NEXT_PUBLIC_API_URL": "https://your-backend-url.vercel.app"
+}
 ```
 
-### Option 3: Automated Deployment
+## 🚀 Step-by-Step Deployment
 
-Use our deployment script:
+### **Phase 1: Deploy Backend First**
+
+#### **Step 1: Go to Vercel Dashboard**
+1. Visit [vercel.com](https://vercel.com)
+2. Sign in with GitHub
+3. Click "New Project"
+
+#### **Step 2: Import Backend Repository**
+1. Find "Brizo" from `sisi-hacks`
+2. Click "Import"
+3. **Root Directory**: `backend/`
+4. **Framework Preset**: Node.js
+5. **Build Command**: Leave empty (we'll set it)
+6. **Output Directory**: Leave empty
+7. **Install Command**: `npm install`
+8. Click "Deploy"
+
+#### **Step 3: Configure Backend Environment Variables**
+1. Go to Project Settings → Environment Variables
+2. Add these variables:
+   ```
+   NODE_ENV=production
+   PORT=3000
+   ```
+3. Click "Save"
+
+#### **Step 4: Deploy Backend**
+1. Click "Deploy" button
+2. Wait for deployment to complete
+3. **Copy the backend URL** (e.g., `https://brizo-backend-xyz.vercel.app`)
+
+### **Phase 2: Deploy Frontend**
+
+#### **Step 5: Update Frontend Configuration**
+1. **Update `frontend/vercel.json`** with your backend URL:
+   ```json
+   "env": {
+     "NEXT_PUBLIC_API_URL": "https://your-actual-backend-url.vercel.app"
+   }
+   ```
+
+2. **Update root `vercel.json`** with your backend URL:
+   ```json
+   "env": {
+     "NEXT_PUBLIC_API_URL": "https://your-actual-backend-url.vercel.app"
+   }
+   ```
+
+#### **Step 6: Deploy Frontend**
+1. Go back to Vercel Dashboard
+2. Click "New Project"
+3. Import "Brizo" again
+4. **Root Directory**: `frontend/`
+5. **Framework Preset**: Next.js (auto-detected)
+6. **Build Command**: `npm run build`
+7. **Output Directory**: `.next`
+8. **Install Command**: `npm install`
+9. Click "Deploy"
+
+#### **Step 7: Configure Frontend Environment Variables**
+1. Go to Project Settings → Environment Variables
+2. Add:
+   ```
+   NEXT_PUBLIC_API_URL=https://your-backend-url.vercel.app
+   ```
+3. Click "Save"
+4. **Redeploy** the frontend
+
+## 🔄 Alternative: Automated Deployment Script
+
+If you prefer automation, use our script:
 
 ```bash
 # Make script executable
@@ -54,156 +109,66 @@ chmod +x deploy-vercel.sh
 ./deploy-vercel.sh
 ```
 
-## 🔧 Manual Deployment Steps
+## 🌐 Final URLs
 
-### Step 1: Deploy Backend
+After deployment, you'll have:
 
+- **Frontend**: `https://brizo-frontend-xyz.vercel.app`
+- **Backend**: `https://brizo-backend-xyz.vercel.app`
+- **API Endpoints**: `https://brizo-backend-xyz.vercel.app/api/*`
+
+## ✅ Verification Steps
+
+### **Test Backend**
 ```bash
-cd backend
-
-# Create Vercel config
-cat > vercel.json << EOF
-{
-  "version": 2,
-  "name": "brizo-backend",
-  "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/server.js"
-    }
-  ]
-}
-EOF
-
-# Deploy
-vercel --prod
+curl https://your-backend-url.vercel.app/health
 ```
 
-### Step 2: Deploy Frontend
-
-```bash
-cd frontend
-
-# Set backend URL
-echo "NEXT_PUBLIC_API_URL=https://your-backend-url.vercel.app" > .env.local
-
-# Deploy
-vercel --prod
-```
-
-## 🌍 Environment Variables
-
-Set these in your Vercel dashboard:
-
-### Backend Environment Variables:
-```bash
-NODE_ENV=production
-DB_PATH=./data/brizo.db
-LOG_LEVEL=info
-STACKS_NETWORK=testnet
-STACKS_API_URL=https://api.testnet.hiro.so
-CONTRACT_ENABLED=false
-```
-
-### Frontend Environment Variables:
-```bash
-NEXT_PUBLIC_API_URL=https://your-backend-url.vercel.app
-```
-
-## 📱 Custom Domain Setup
-
-1. **Add Domain**: In Vercel dashboard, go to your project → Settings → Domains
-2. **Configure DNS**: Add the required DNS records
-3. **SSL Certificate**: Vercel automatically provides SSL certificates
-
-## 🔒 Security Considerations
-
-- **CORS**: Update backend CORS settings for your Vercel domain
-- **Rate Limiting**: Vercel has built-in rate limiting
-- **Environment Variables**: Never commit sensitive data to Git
-
-## 📊 Monitoring & Analytics
-
-- **Vercel Analytics**: Built-in performance monitoring
-- **Function Logs**: View serverless function logs in dashboard
-- **Performance**: Monitor Core Web Vitals
+### **Test Frontend**
+1. Visit your frontend URL
+2. Check browser console for API connection
+3. Test wallet connection
+4. Test payment flow
 
 ## 🚨 Common Issues & Solutions
 
-### Issue: CORS Errors
-**Solution**: Update backend CORS configuration:
-```javascript
-app.use(cors({
-  origin: ['https://your-frontend.vercel.app', 'http://localhost:3000'],
-  credentials: true
-}));
-```
+### **Issue 1: Environment Variable Not Found**
+- **Solution**: Update `vercel.json` files with actual URLs
+- **Fix**: Remove `@brizo-api-url` references
 
-### Issue: Database Path Errors
-**Solution**: Use absolute paths or Vercel's `/tmp` directory for file storage
+### **Issue 2: Build Failures**
+- **Solution**: Check Node.js version (18+ required)
+- **Fix**: Update build commands in Vercel
 
-### Issue: Function Timeout
-**Solution**: Increase `maxDuration` in vercel.json:
-```json
-{
-  "functions": {
-    "server.js": {
-      "maxDuration": 60
-    }
-  }
-}
-```
+### **Issue 3: API Connection Errors**
+- **Solution**: Verify `NEXT_PUBLIC_API_URL` is correct
+- **Fix**: Redeploy frontend after updating environment
 
-## 🔄 Updating Deployments
+### **Issue 4: CORS Errors**
+- **Solution**: Backend is already configured for CORS
+- **Fix**: Ensure frontend URL is in backend CORS settings
 
-### Update Frontend:
-```bash
-cd frontend
-vercel --prod
-```
+## 🏆 For Stacks Competition
 
-### Update Backend:
-```bash
-cd backend
-vercel --prod
-```
+**Your deployment will now have:**
+- ✅ **Live URLs** for judges
+- ✅ **Professional presentation**
+- ✅ **Automatic updates** on Git push
+- ✅ **Production-ready** application
 
-## 🧹 Removing Deployments
+## 📱 Post-Deployment
 
-```bash
-# Remove specific project
-vercel remove --yes
-
-# Or remove from Vercel dashboard
-# Go to Project Settings → Delete Project
-```
-
-## 📈 Performance Optimization
-
-1. **Image Optimization**: Use Next.js Image component
-2. **Code Splitting**: Automatic with Next.js
-3. **CDN**: Vercel provides global CDN
-4. **Edge Functions**: Consider using for low-latency operations
-
-## 🎉 Success!
-
-After deployment, your Brizo app will be available at:
-- **Frontend**: `https://your-project.vercel.app`
-- **Backend**: `https://your-backend.vercel.app`
+1. **Test all functionality**
+2. **Update README** with live URLs
+3. **Submit to Stacks competition**
+4. **Monitor performance** in Vercel dashboard
 
 ## 🔗 Useful Links
 
-- [Vercel Documentation](https://vercel.com/docs)
-- [Next.js Deployment](https://nextjs.org/docs/deployment)
 - [Vercel Dashboard](https://vercel.com/dashboard)
-- [Brizo Project](https://github.com/your-username/brizo)
+- [Brizo GitHub](https://github.com/sisi-hacks/Brizo)
+- [Stacks Documentation](https://docs.stacks.co/)
 
 ---
 
-**Happy Deploying! 🚀**
+**🎯 Ready to deploy? Follow the steps above and you'll have a professional, live Brizo application!**
