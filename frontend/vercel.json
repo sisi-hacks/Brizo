@@ -10,11 +10,6 @@
   "env": {
     "NEXT_PUBLIC_API_URL": "@brizo-api-url"
   },
-  "functions": {
-    "app/api/**/*.ts": {
-      "maxDuration": 30
-    }
-  },
   "headers": [
     {
       "source": "/(.*)",

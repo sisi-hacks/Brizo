@@ -47,11 +47,6 @@ cat > vercel.json << EOF
   "env": {
     "NODE_ENV": "production",
     "PORT": "3000"
-  },
-  "functions": {
-    "server.js": {
-      "maxDuration": 30
-    }
   }
 }
 EOF

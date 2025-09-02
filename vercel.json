@@ -15,10 +15,5 @@
   ],
   "env": {
     "NEXT_PUBLIC_API_URL": "@brizo-api-url"
-  },
-  "functions": {
-    "frontend/app/api/**/*.ts": {
-      "maxDuration": 30
-    }
   }
 }
