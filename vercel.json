@@ -1,19 +1,27 @@
 {
   "version": 2,
-  "name": "brizo-frontend",
+  "name": "brizo-fullstack",
   "builds": [
     {
       "src": "frontend/package.json",
       "use": "@vercel/next"
+    },
+    {
+      "src": "backend/server.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/backend/server.js"
+    },
     {
       "src": "/(.*)",
       "dest": "/frontend/$1"
     }
   ],
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://your-backend-url.vercel.app"
+    "NEXT_PUBLIC_API_URL": "https://your-project.vercel.app/api"
   }
 }

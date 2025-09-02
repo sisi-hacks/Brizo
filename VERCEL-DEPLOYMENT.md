@@ -1,6 +1,6 @@
-# 🚀 Brizo Vercel Deployment Guide
+# 🚀 Brizo Full-Stack Vercel Deployment Guide
 
-Complete guide for deploying Brizo on Vercel with both frontend and backend.
+Complete guide for deploying Brizo as a **single full-stack project** on Vercel.
 
 ## 📋 Prerequisites
 
@@ -9,93 +9,80 @@ Complete guide for deploying Brizo on Vercel with both frontend and backend.
 - ✅ Node.js 18+ installed locally
 - ✅ Git repository up to date
 
-## 🔧 Quick Fix for Environment Variables
+## 🎯 Single Full-Stack Deployment
 
-**IMPORTANT**: Before deploying, update these files with your actual backend URL:
+**Brizo is now configured as a MONOREPO that deploys both frontend and backend together!**
 
-1. **Root `vercel.json`**:
-```json
-"env": {
-  "NEXT_PUBLIC_API_URL": "https://your-backend-url.vercel.app"
-}
-```
-
-2. **`frontend/vercel.json`**:
-```json
-"env": {
-  "NEXT_PUBLIC_API_URL": "https://your-backend-url.vercel.app"
-}
-```
-
-## 🚀 Step-by-Step Deployment
-
-### **Phase 1: Deploy Backend First**
+### **🚀 One-Click Deployment**
 
 #### **Step 1: Go to Vercel Dashboard**
 1. Visit [vercel.com](https://vercel.com)
 2. Sign in with GitHub
-3. Click "New Project"
+3. Click **"New Project"**
 
-#### **Step 2: Import Backend Repository**
-1. Find "Brizo" from `sisi-hacks`
-2. Click "Import"
-3. **Root Directory**: `backend/`
-4. **Framework Preset**: Node.js
-5. **Build Command**: Leave empty (we'll set it)
-6. **Output Directory**: Leave empty
-7. **Install Command**: `npm install`
-8. Click "Deploy"
+#### **Step 2: Import Full-Stack Repository**
+1. Find **"Brizo"** from `sisi-hacks`
+2. Click **"Import"**
+3. **Root Directory**: Leave as root (don't change)
+4. **Framework Preset**: Auto-detected as monorepo
+5. **Build Command**: Auto-detected
+6. **Output Directory**: Auto-detected
+7. **Install Command**: Auto-detected
+8. Click **"Deploy"**
 
-#### **Step 3: Configure Backend Environment Variables**
-1. Go to Project Settings → Environment Variables
+#### **Step 3: Configure Environment Variables**
+1. Go to **Project Settings** → **Environment Variables**
 2. Add these variables:
    ```
    NODE_ENV=production
    PORT=3000
+   NEXT_PUBLIC_API_URL=https://your-project.vercel.app/api
    ```
-3. Click "Save"
+3. Click **"Save"**
 
-#### **Step 4: Deploy Backend**
-1. Click "Deploy" button
-2. Wait for deployment to complete
-3. **Copy the backend URL** (e.g., `https://brizo-backend-xyz.vercel.app`)
+#### **Step 4: Deploy Everything**
+1. Click **"Deploy"** button
+2. Wait for both frontend and backend to deploy
+3. **🎉 Done!** Both services are now live
 
-### **Phase 2: Deploy Frontend**
+---
 
-#### **Step 5: Update Frontend Configuration**
-1. **Update `frontend/vercel.json`** with your backend URL:
-   ```json
-   "env": {
-     "NEXT_PUBLIC_API_URL": "https://your-actual-backend-url.vercel.app"
-   }
-   ```
+## 🌐 How It Works
 
-2. **Update root `vercel.json`** with your backend URL:
-   ```json
-   "env": {
-     "NEXT_PUBLIC_API_URL": "https://your-actual-backend-url.vercel.app"
-   }
-   ```
+### **Single Project Structure:**
+```
+brizo/
+├── frontend/          # Next.js app
+├── backend/           # Express.js API
+└── vercel.json        # Full-stack config
+```
 
-#### **Step 6: Deploy Frontend**
-1. Go back to Vercel Dashboard
-2. Click "New Project"
-3. Import "Brizo" again
-4. **Root Directory**: `frontend/`
-5. **Framework Preset**: Next.js (auto-detected)
-6. **Build Command**: `npm run build`
-7. **Output Directory**: `.next`
-8. **Install Command**: `npm install`
-9. Click "Deploy"
+### **Automatic Routing:**
+- **Frontend**: `https://your-project.vercel.app/`
+- **Backend API**: `https://your-project.vercel.app/api/*`
+- **Health Check**: `https://your-project.vercel.app/api/health`
 
-#### **Step 7: Configure Frontend Environment Variables**
-1. Go to Project Settings → Environment Variables
-2. Add:
-   ```
-   NEXT_PUBLIC_API_URL=https://your-backend-url.vercel.app
-   ```
-3. Click "Save"
-4. **Redeploy** the frontend
+### **Smart Build Process:**
+1. **Backend**: Builds as Node.js serverless functions
+2. **Frontend**: Builds as Next.js static site
+3. **Routing**: Vercel automatically routes `/api/*` to backend
+
+---
+
+## ✅ Verification Steps
+
+### **Test Backend API**
+```bash
+curl https://your-project.vercel.app/api/health
+```
+
+### **Test Frontend**
+1. Visit your project URL
+2. Check browser console for API connection
+3. Test wallet connection
+4. Test payment flow
+
+---
 
 ## 🔄 Alternative: Automated Deployment Script
 
@@ -109,59 +96,58 @@ chmod +x deploy-vercel.sh
 ./deploy-vercel.sh
 ```
 
+---
+
 ## 🌐 Final URLs
 
 After deployment, you'll have:
 
-- **Frontend**: `https://brizo-frontend-xyz.vercel.app`
-- **Backend**: `https://brizo-backend-xyz.vercel.app`
-- **API Endpoints**: `https://brizo-backend-xyz.vercel.app/api/*`
+- **Frontend**: `https://your-project.vercel.app`
+- **Backend API**: `https://your-project.vercel.app/api/*`
+- **Health Check**: `https://your-project.vercel.app/api/health`
+- **Payment Creation**: `https://your-project.vercel.app/api/create-payment`
 
-## ✅ Verification Steps
-
-### **Test Backend**
-```bash
-curl https://your-backend-url.vercel.app/health
-```
-
-### **Test Frontend**
-1. Visit your frontend URL
-2. Check browser console for API connection
-3. Test wallet connection
-4. Test payment flow
+---
 
 ## 🚨 Common Issues & Solutions
 
-### **Issue 1: Environment Variable Not Found**
-- **Solution**: Update `vercel.json` files with actual URLs
-- **Fix**: Remove `@brizo-api-url` references
-
-### **Issue 2: Build Failures**
+### **Issue 1: Build Failures**
 - **Solution**: Check Node.js version (18+ required)
-- **Fix**: Update build commands in Vercel
+- **Fix**: Ensure all dependencies are in package.json
 
-### **Issue 3: API Connection Errors**
+### **Issue 2: API Connection Errors**
 - **Solution**: Verify `NEXT_PUBLIC_API_URL` is correct
-- **Fix**: Redeploy frontend after updating environment
+- **Fix**: Should be `https://your-project.vercel.app/api`
+
+### **Issue 3: Route Not Found**
+- **Solution**: All backend routes now use `/api` prefix
+- **Fix**: Frontend calls `/api/endpoint`, not `/endpoint`
 
 ### **Issue 4: CORS Errors**
-- **Solution**: Backend is already configured for CORS
-- **Fix**: Ensure frontend URL is in backend CORS settings
+- **Solution**: Backend is configured for production CORS
+- **Fix**: No additional configuration needed
+
+---
 
 ## 🏆 For Stacks Competition
 
 **Your deployment will now have:**
-- ✅ **Live URLs** for judges
-- ✅ **Professional presentation**
+- ✅ **Single URL** for judges to test
+- ✅ **Professional full-stack presentation**
 - ✅ **Automatic updates** on Git push
 - ✅ **Production-ready** application
+- ✅ **Simplified management**
+
+---
 
 ## 📱 Post-Deployment
 
 1. **Test all functionality**
-2. **Update README** with live URLs
+2. **Update README** with live URL
 3. **Submit to Stacks competition**
 4. **Monitor performance** in Vercel dashboard
+
+---
 
 ## 🔗 Useful Links
 
@@ -171,4 +157,28 @@ curl https://your-backend-url.vercel.app/health
 
 ---
 
-**🎯 Ready to deploy? Follow the steps above and you'll have a professional, live Brizo application!**
+## 🎯 Why Single Deployment is Better
+
+### **✅ Advantages:**
+- **One URL** for everything
+- **Simplified management**
+- **Automatic routing**
+- **Better for competitions**
+- **Easier to maintain**
+
+### **🔄 Before (Separate):**
+- Frontend: `https://brizo-frontend.vercel.app`
+- Backend: `https://brizo-backend.vercel.app`
+- Complex environment setup
+
+### **🎉 Now (Single):**
+- Everything: `https://brizo.vercel.app`
+- Frontend: `/`
+- Backend: `/api/*`
+- Simple and professional
+
+---
+
+**🎯 Ready to deploy? Just import the repository and click deploy!**
+
+**Everything is now configured for single full-stack deployment!** 🚀

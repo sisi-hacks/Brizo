@@ -66,6 +66,9 @@ app.use(express.static('public'));
 // Apply general rate limiting
 app.use(generalLimiter);
 
+// API prefix for Vercel deployment
+const API_PREFIX = process.env.NODE_ENV === 'production' ? '/api' : '';
+
 // Apply security middleware (will be initialized later)
 app.use((req, res, next) => {
   if (securityService) {
@@ -175,7 +178,7 @@ const MERCHANT_WALLET = 'ST1PQHQKV0RJXZFYVWE6CHS7NS4T3MG9XJVTQVAVSB';
 // Routes
 
 // Health check
-app.get('/health', async (req, res) => {
+app.get(`${API_PREFIX}/health`, async (req, res) => {
   try {
     if (monitoringService) {
       const healthCheck = await monitoringService.runHealthChecks();
@@ -198,7 +201,7 @@ app.get('/health', async (req, res) => {
 });
 
 // Create payment endpoint
-app.post('/create-payment', 
+app.post(`${API_PREFIX}/create-payment`, 
   paymentLimiter,
   validateCreatePayment,
   asyncHandler(async (req, res) => {
@@ -228,7 +231,7 @@ app.post('/create-payment',
 );
 
 // Check payment status with real-time verification
-app.get('/check-status/:paymentId', 
+app.get(`${API_PREFIX}/check-status/:paymentId`, 
   validatePaymentIdParam,
   asyncHandler(async (req, res) => {
     const { paymentId } = req.params;
@@ -248,7 +251,7 @@ app.get('/check-status/:paymentId',
 );
 
 // Get checkout page data (for frontend integration)
-app.get('/checkout/:paymentId', 
+app.get(`${API_PREFIX}/checkout/:paymentId`, 
   validatePaymentIdParam,
   asyncHandler(async (req, res) => {
     const { paymentId } = req.params;
@@ -304,7 +307,7 @@ app.get('/checkout/:paymentId',
 );
 
 // Process sBTC payment with real Stacks network verification
-app.post('/process-payment/:paymentId', 
+app.post(`${API_PREFIX}/process-payment/:paymentId`, 
   processPaymentLimiter,
   validatePaymentIdParam,
   asyncHandler(async (req, res) => {
@@ -334,7 +337,7 @@ app.post('/process-payment/:paymentId',
 );
 
 // Get merchant info
-app.get('/merchant/:merchantId', 
+app.get(`${API_PREFIX}/merchant/:merchantId`, 
   validateMerchantId,
   asyncHandler(async (req, res) => {
     const { merchantId } = req.params;
@@ -358,7 +361,7 @@ app.get('/merchant/:merchantId',
 );
 
 // Analytics endpoint for donations
-app.get('/analytics/donations/:merchantId', 
+app.get(`${API_PREFIX}/analytics/donations/:merchantId`, 
   analyticsLimiter,
   validateMerchantId,
   asyncHandler(async (req, res) => {
@@ -390,7 +393,7 @@ app.get('/analytics/donations/:merchantId',
 );
 
 // Webhook endpoint for payment notifications
-app.post('/webhook/payment-success', (req, res) => {
+app.post(`${API_PREFIX}/webhook/payment-success`, (req, res) => {
   const { paymentId, sbtcTxId, amount, merchantId } = req.body;
 
   // In production, verify webhook signature
@@ -406,7 +409,7 @@ app.post('/webhook/payment-success', (req, res) => {
 });
 
 // Database backup endpoint
-app.post('/admin/backup', asyncHandler(async (req, res) => {
+app.post(`${API_PREFIX}/admin/backup`, asyncHandler(async (req, res) => {
   try {
     const backupPath = await dbManager.backup();
     res.json({
@@ -421,7 +424,7 @@ app.post('/admin/backup', asyncHandler(async (req, res) => {
 }));
 
 // Database stats endpoint
-app.get('/admin/stats', asyncHandler(async (req, res) => {
+app.get(`${API_PREFIX}/admin/stats`, asyncHandler(async (req, res) => {
   const paymentStats = await dbManager.get('SELECT COUNT(*) as total, SUM(CASE WHEN status = "paid" THEN 1 ELSE 0 END) as paid FROM payments');
   const merchantStats = await dbManager.get('SELECT COUNT(*) as total FROM merchants');
   
@@ -433,7 +436,7 @@ app.get('/admin/stats', asyncHandler(async (req, res) => {
 }));
 
 // Stacks network status endpoint
-app.get('/stacks/status', asyncHandler(async (req, res) => {
+app.get(`${API_PREFIX}/stacks/status`, asyncHandler(async (req, res) => {
   if (!paymentProcessor) {
     return res.status(503).json({ error: 'Payment processor not initialized' });
   }
@@ -448,7 +451,7 @@ app.get('/stacks/status', asyncHandler(async (req, res) => {
 }));
 
 // Validate wallet address endpoint
-app.post('/stacks/validate-address', asyncHandler(async (req, res) => {
+app.post(`${API_PREFIX}/stacks/validate-address`, asyncHandler(async (req, res) => {
   const { address } = req.body;
 
   if (!address) {
@@ -469,7 +472,7 @@ app.post('/stacks/validate-address', asyncHandler(async (req, res) => {
 }));
 
 // Request testnet STX from faucet (for development)
-app.post('/stacks/faucet/:address', asyncHandler(async (req, res) => {
+app.post(`${API_PREFIX}/stacks/faucet/:address`, asyncHandler(async (req, res) => {
   const { address } = req.params;
 
   if (!paymentProcessor) {
@@ -491,7 +494,7 @@ app.post('/stacks/faucet/:address', asyncHandler(async (req, res) => {
 }));
 
 // Get merchant sBTC balance
-app.get('/merchant/:merchantId/balance', 
+app.get(`${API_PREFIX}/merchant/:merchantId/balance`, 
   validateMerchantId,
   asyncHandler(async (req, res) => {
     const { merchantId } = req.params;
@@ -511,7 +514,7 @@ app.get('/merchant/:merchantId/balance',
 );
 
 // Get merchant recent transactions
-app.get('/merchant/:merchantId/transactions', 
+app.get(`${API_PREFIX}/merchant/:merchantId/transactions`, 
   validateMerchantId,
   asyncHandler(async (req, res) => {
     const { merchantId } = req.params;
@@ -532,7 +535,7 @@ app.get('/merchant/:merchantId/transactions',
 );
 
 // Monitor payment transaction
-app.post('/monitor-payment/:paymentId', 
+app.post(`${API_PREFIX}/monitor-payment/:paymentId`, 
   validatePaymentIdParam,
   asyncHandler(async (req, res) => {
     const { paymentId } = req.params;
@@ -557,7 +560,7 @@ app.post('/monitor-payment/:paymentId',
 );
 
 // Get processing queue status
-app.get('/admin/processing-queue', asyncHandler(async (req, res) => {
+app.get(`${API_PREFIX}/admin/processing-queue`, asyncHandler(async (req, res) => {
   if (!paymentProcessor) {
     return res.status(503).json({ error: 'Payment processor not initialized' });
   }
@@ -572,7 +575,7 @@ app.get('/admin/processing-queue', asyncHandler(async (req, res) => {
 }));
 
 // Get sBTC contract information
-app.get('/stacks/sbtc/contracts', asyncHandler(async (req, res) => {
+app.get(`${API_PREFIX}/stacks/sbtc/contracts`, asyncHandler(async (req, res) => {
   if (!paymentProcessor) {
     return res.status(503).json({ error: 'Payment processor not initialized' });
   }
@@ -587,7 +590,7 @@ app.get('/stacks/sbtc/contracts', asyncHandler(async (req, res) => {
 }));
 
 // Get sBTC operation status
-app.get('/stacks/sbtc/operation/:operationId', asyncHandler(async (req, res) => {
+app.get(`${API_PREFIX}/stacks/sbtc/operation/:operationId`, asyncHandler(async (req, res) => {
   const { operationId } = req.params;
 
   if (!paymentProcessor) {
@@ -604,7 +607,7 @@ app.get('/stacks/sbtc/operation/:operationId', asyncHandler(async (req, res) => 
 }));
 
 // Estimate transaction fees
-app.get('/stacks/fees/estimate', asyncHandler(async (req, res) => {
+app.get(`${API_PREFIX}/stacks/fees/estimate`, asyncHandler(async (req, res) => {
   const { type = 'token_transfer' } = req.query;
 
   if (!paymentProcessor) {
@@ -623,7 +626,7 @@ app.get('/stacks/fees/estimate', asyncHandler(async (req, res) => {
 // Smart Contract Integration Endpoints
 
 // Get contract statistics
-app.get('/contract/stats', asyncHandler(async (req, res) => {
+app.get(`${API_PREFIX}/contract/stats`, asyncHandler(async (req, res) => {
   if (!contractIntegration) {
     return res.status(503).json({ error: 'Contract integration not initialized' });
   }
@@ -638,7 +641,7 @@ app.get('/contract/stats', asyncHandler(async (req, res) => {
 }));
 
 // Register merchant in smart contract
-app.post('/contract/register-merchant', asyncHandler(async (req, res) => {
+app.post(`${API_PREFIX}/contract/register-merchant`, asyncHandler(async (req, res) => {
   const { merchantId, name, walletAddress, privateKey } = req.body;
 
   if (!contractIntegration) {
@@ -669,7 +672,7 @@ app.post('/contract/register-merchant', asyncHandler(async (req, res) => {
 }));
 
 // Get payment from smart contract
-app.get('/contract/payment/:paymentId', asyncHandler(async (req, res) => {
+app.get(`${API_PREFIX}/contract/payment/:paymentId`, asyncHandler(async (req, res) => {
   const { paymentId } = req.params;
 
   if (!contractIntegration) {
@@ -686,7 +689,7 @@ app.get('/contract/payment/:paymentId', asyncHandler(async (req, res) => {
 }));
 
 // Get merchant balance from smart contract
-app.get('/contract/merchant/:merchantId/balance', asyncHandler(async (req, res) => {
+app.get(`${API_PREFIX}/contract/merchant/:merchantId/balance`, asyncHandler(async (req, res) => {
   const { merchantId } = req.params;
 
   if (!contractIntegration) {
@@ -705,7 +708,7 @@ app.get('/contract/merchant/:merchantId/balance', asyncHandler(async (req, res) 
 // Production Monitoring Endpoints
 
 // Get comprehensive metrics
-app.get('/metrics', asyncHandler(async (req, res) => {
+app.get(`${API_PREFIX}/metrics`, asyncHandler(async (req, res) => {
   if (!monitoringService) {
     return res.status(503).json({ error: 'Monitoring service not initialized' });
   }
@@ -720,7 +723,7 @@ app.get('/metrics', asyncHandler(async (req, res) => {
 }));
 
 // Get performance metrics
-app.get('/metrics/performance', asyncHandler(async (req, res) => {
+app.get(`${API_PREFIX}/metrics/performance`, asyncHandler(async (req, res) => {
   if (!monitoringService) {
     return res.status(503).json({ error: 'Monitoring service not initialized' });
   }
@@ -735,7 +738,7 @@ app.get('/metrics/performance', asyncHandler(async (req, res) => {
 }));
 
 // Get alerts
-app.get('/alerts', asyncHandler(async (req, res) => {
+app.get(`${API_PREFIX}/alerts`, asyncHandler(async (req, res) => {
   if (!monitoringService) {
     return res.status(503).json({ error: 'Monitoring service not initialized' });
   }
@@ -750,7 +753,7 @@ app.get('/alerts', asyncHandler(async (req, res) => {
 }));
 
 // Get security statistics
-app.get('/security/stats', asyncHandler(async (req, res) => {
+app.get(`${API_PREFIX}/security/stats`, asyncHandler(async (req, res) => {
   if (!securityService) {
     return res.status(503).json({ error: 'Security service not initialized' });
   }
@@ -765,7 +768,7 @@ app.get('/security/stats', asyncHandler(async (req, res) => {
 }));
 
 // Get log statistics
-app.get('/logs/stats', asyncHandler(async (req, res) => {
+app.get(`${API_PREFIX}/logs/stats`, asyncHandler(async (req, res) => {
   try {
     const stats = logger.getLogStats();
     res.json(stats);
@@ -776,7 +779,7 @@ app.get('/logs/stats', asyncHandler(async (req, res) => {
 }));
 
 // Reset metrics (admin only)
-app.post('/admin/reset-metrics', asyncHandler(async (req, res) => {
+app.post(`${API_PREFIX}/admin/reset-metrics`, asyncHandler(async (req, res) => {
   if (!monitoringService) {
     return res.status(503).json({ error: 'Monitoring service not initialized' });
   }
@@ -792,7 +795,7 @@ app.post('/admin/reset-metrics', asyncHandler(async (req, res) => {
 }));
 
 // Clean up logs (admin only)
-app.post('/admin/cleanup-logs', asyncHandler(async (req, res) => {
+app.post(`${API_PREFIX}/admin/cleanup-logs`, asyncHandler(async (req, res) => {
   try {
     logger.cleanupLogs();
     logger.info('Logs cleaned up by admin');
