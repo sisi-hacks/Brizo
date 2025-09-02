@@ -1,0 +1,42 @@
+{
+  "name": "brizo",
+  "version": "1.0.0",
+  "description": "Brizo — Flowing Bitcoin Payments, Effortlessly",
+  "main": "README.md",
+  "scripts": {
+    "start": "./start.sh",
+    "dev": "./start.sh",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "build": "cd frontend && npm run build",
+    "test:backend": "cd backend && npm test",
+    "test:frontend": "cd frontend && npm test",
+    "test": "npm run test:backend && npm run test:frontend",
+    "clean": "rm -rf backend/node_modules frontend/node_modules backend/.next frontend/.next",
+    "backend": "cd backend && npm run dev",
+    "frontend": "cd frontend && npm run dev"
+  },
+  "keywords": [
+    "bitcoin",
+    "stacks",
+    "sbtc",
+    "payments",
+    "gateway",
+    "donations",
+    "crypto",
+    "blockchain"
+  ],
+  "author": "Brizo Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/brizo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/brizo/issues"
+  },
+  "homepage": "https://github.com/your-username/brizo#readme"
+}
