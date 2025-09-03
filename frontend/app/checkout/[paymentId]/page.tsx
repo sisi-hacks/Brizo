@@ -43,7 +43,7 @@ export default function CheckoutPage() {
   const fetchPaymentDetails = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`http://localhost:3001/checkout/${paymentId}`)
+      const response = await fetch(`/api/check-status/${paymentId}`)
       if (!response.ok) {
         throw new Error('Payment not found')
       }
