@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { showConnect } from '@stacks/connect'
-import { openContractCall, type ContractCallRegularOptions } from '@stacks/transactions'
 
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || 'Brizo'
 const APP_ICON = process.env.NEXT_PUBLIC_APP_ICON || '/favicon.ico'
