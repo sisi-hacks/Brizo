@@ -9,6 +9,8 @@ const PaymentProcessor = require('./lib/paymentProcessor');
 const ContractIntegrationService = require('./lib/contractIntegration');
 const MonitoringService = require('./lib/monitoring');
 const SecurityService = require('./lib/security');
+const AccountManager = require('./lib/accountManager');
+const TestnetIntegrationService = require('./lib/testnetIntegration');
 const logger = require('./lib/logger');
 require('dotenv').config();
 
@@ -101,6 +103,8 @@ let paymentProcessor;
 let contractIntegration;
 let monitoringService;
 let securityService;
+let accountManager;
+let testnetIntegration;
 
 // Initialize database and services
 async function initializeServices() {
@@ -157,6 +161,14 @@ async function initializeServices() {
     // Initialize security service
     securityService = new SecurityService();
     console.log('✅ Security service initialized successfully');
+    
+    // Initialize account manager
+    accountManager = new AccountManager();
+    console.log('✅ Account manager initialized successfully');
+    
+    // Initialize testnet integration service
+    testnetIntegration = new TestnetIntegrationService();
+    console.log('✅ Testnet integration service initialized successfully');
     
     // Start cleanup interval for processing queue
     setInterval(() => {
@@ -806,6 +818,219 @@ app.post(`${API_PREFIX}/admin/cleanup-logs`, asyncHandler(async (req, res) => {
   }
 }));
 
+// ===== STACKS ACCOUNT MANAGEMENT ENDPOINTS =====
+
+// Create new Stacks account
+app.post(`${API_PREFIX}/stacks/accounts/create`, asyncHandler(async (req, res) => {
+  try {
+    const { network, passphrase } = req.body;
+    
+    if (!network || !passphrase) {
+      return res.status(400).json({ error: 'Network and passphrase are required' });
+    }
+    
+    if (!['testnet', 'mainnet'].includes(network)) {
+      return res.status(400).json({ error: 'Network must be testnet or mainnet' });
+    }
+    
+    const result = await accountManager.createAccount(network, passphrase);
+    logger.info('New Stacks account created', { network, address: result.address });
+    res.status(201).json(result);
+    
+  } catch (error) {
+    logger.error('Failed to create Stacks account', { error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+}));
+
+// Import existing Stacks account
+app.post(`${API_PREFIX}/stacks/accounts/import`, asyncHandler(async (req, res) => {
+  try {
+    const { privateKey, network, passphrase } = req.body;
+    
+    if (!privateKey || !network || !passphrase) {
+      return res.status(400).json({ error: 'Private key, network, and passphrase are required' });
+    }
+    
+    if (!['testnet', 'mainnet'].includes(network)) {
+      return res.status(400).json({ error: 'Network must be testnet or mainnet' });
+    }
+    
+    const result = await accountManager.importAccount(privateKey, network, passphrase);
+    logger.info('Stacks account imported', { network, address: result.address });
+    res.status(201).json(result);
+    
+  } catch (error) {
+    logger.error('Failed to import Stacks account', { error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+}));
+
+// List all accounts
+app.get(`${API_PREFIX}/stacks/accounts`, asyncHandler(async (req, res) => {
+  try {
+    const accounts = accountManager.listAccounts();
+    res.json({
+      accounts,
+      total: accounts.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Failed to list accounts', { error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+}));
+
+// Get account details
+app.get(`${API_PREFIX}/stacks/accounts/:accountId`, asyncHandler(async (req, res) => {
+  try {
+    const { accountId } = req.params;
+    const account = accountManager.getAccount(accountId);
+    res.json(account);
+  } catch (error) {
+    logger.error('Failed to get account', { error: error.message });
+    res.status(404).json({ error: error.message });
+  }
+}));
+
+// Update account status
+app.patch(`${API_PREFIX}/stacks/accounts/:accountId/status`, asyncHandler(async (req, res) => {
+  try {
+    const { accountId } = req.params;
+    const { status } = req.body;
+    
+    if (!['active', 'inactive', 'suspended'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+    
+    const account = accountManager.updateAccountStatus(accountId, status);
+    logger.info('Account status updated', { accountId, status });
+    res.json(account);
+  } catch (error) {
+    logger.error('Failed to update account status', { error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+}));
+
+// Delete account
+app.delete(`${API_PREFIX}/stacks/accounts/:accountId`, asyncHandler(async (req, res) => {
+  try {
+    const { accountId } = req.params;
+    accountManager.deleteAccount(accountId);
+    logger.info('Account deleted', { accountId });
+    res.json({ message: 'Account deleted successfully' });
+  } catch (error) {
+    logger.error('Failed to delete account', { error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+}));
+
+// Get account statistics
+app.get(`${API_PREFIX}/stacks/accounts/stats`, asyncHandler(async (req, res) => {
+  try {
+    const stats = accountManager.getStats();
+    res.json(stats);
+  } catch (error) {
+    logger.error('Failed to get account stats', { error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+}));
+
+// ===== STACKS TESTNET INTEGRATION ENDPOINTS =====
+
+// Get testnet status
+app.get(`${API_PREFIX}/stacks/testnet/status`, asyncHandler(async (req, res) => {
+  try {
+    const status = await testnetIntegration.getTestnetStatus();
+    res.json(status);
+  } catch (error) {
+    logger.error('Failed to get testnet status', { error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+}));
+
+// Request testnet STX from faucet
+app.post(`${API_PREFIX}/stacks/testnet/faucet`, asyncHandler(async (req, res) => {
+  try {
+    const { address, stacking } = req.body;
+    
+    if (!address) {
+      return res.status(400).json({ error: 'Address is required' });
+    }
+    
+    const result = await testnetIntegration.requestTestnetSTX(address, stacking || false);
+    
+    if (result.success) {
+      logger.info('Testnet STX requested', { address, stacking });
+      res.json(result);
+    } else {
+      res.status(400).json(result);
+    }
+    
+  } catch (error) {
+    logger.error('Failed to request testnet STX', { error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+}));
+
+// Get testnet balance
+app.get(`${API_PREFIX}/stacks/testnet/balance/:address`, asyncHandler(async (req, res) => {
+  try {
+    const { address } = req.params;
+    const balance = await testnetIntegration.getTestnetBalance(address);
+    res.json(balance);
+  } catch (error) {
+    logger.error('Failed to get testnet balance', { error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+}));
+
+// Get testnet transactions
+app.get(`${API_PREFIX}/stacks/testnet/transactions/:address`, asyncHandler(async (req, res) => {
+  try {
+    const { address } = req.params;
+    const { limit } = req.query;
+    const transactions = await testnetIntegration.getTestnetTransactions(address, parseInt(limit) || 50);
+    res.json(transactions);
+  } catch (error) {
+    logger.error('Failed to get testnet transactions', { error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+}));
+
+// Get testnet network statistics
+app.get(`${API_PREFIX}/stacks/testnet/stats`, asyncHandler(async (req, res) => {
+  try {
+    const stats = await testnetIntegration.getTestnetStats();
+    res.json(stats);
+  } catch (error) {
+    logger.error('Failed to get testnet stats', { error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+}));
+
+// Get testnet environment info
+app.get(`${API_PREFIX}/stacks/testnet/environment`, asyncHandler(async (req, res) => {
+  try {
+    const info = testnetIntegration.getEnvironmentInfo();
+    res.json(info);
+  } catch (error) {
+    logger.error('Failed to get testnet environment info', { error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+}));
+
+// Testnet health check
+app.get(`${API_PREFIX}/stacks/testnet/health`, asyncHandler(async (req, res) => {
+  try {
+    const health = await testnetIntegration.healthCheck();
+    res.json(health);
+  } catch (error) {
+    logger.error('Failed to get testnet health', { error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+}));
+
 // Error handling middleware
 app.use(notFound);
 app.use(errorHandler);
@@ -853,6 +1078,9 @@ app.listen(PORT, () => {
   console.log(`📊 Metrics: GET http://localhost:${PORT}/metrics`);
   console.log(`🚨 Alerts: GET http://localhost:${PORT}/alerts`);
   console.log(`🔒 Security stats: GET http://localhost:${PORT}/security/stats`);
+  console.log(`👤 Account management: POST http://localhost:${PORT}/stacks/accounts/create`);
+  console.log(`🔍 Testnet status: GET http://localhost:${PORT}/stacks/testnet/status`);
+  console.log(`💧 Testnet faucet: POST http://localhost:${PORT}/stacks/testnet/faucet`);
   console.log(`🌍 Environment: ${NODE_ENV}`);
   console.log(`💾 Database: ${dbPath}`);
 });
