@@ -72,7 +72,7 @@ class AccountManager {
         address: stacksAddress,
         publicKey: publicKeyHex,
         btcAddress: btcAddress,
-        privateKey: privateKeyString, // In production, this should be encrypted
+        // Do not persist privateKey in plaintext
         encryptedBackup,
         createdAt: new Date().toISOString(),
         status: 'active'
@@ -81,7 +81,8 @@ class AccountManager {
       this.accounts.set(accountInfo.id, accountInfo);
 
       console.log(`✅ Account created successfully: ${stacksAddress}`);
-      console.log(`🔑 Private Key: ${privateKeyString}`);
+      // Remove private key logging in production
+      // console.log(`🔑 Private Key: ${privateKeyString}`);
       console.log(`💰 BTC Address: ${btcAddress}`);
 
       return {
@@ -91,7 +92,7 @@ class AccountManager {
         network: network,
         publicKey: publicKeyHex,
         btcAddress: btcAddress,
-        privateKey: privateKeyString, // For development only
+        // Do not return privateKey in responses
         backupInstructions: this.generateBackupInstructions(encryptedBackup)
       };
 
@@ -156,7 +157,7 @@ class AccountManager {
         address: stacksAddress,
         publicKey: publicKeyToString(publicKey),
         btcAddress: btcAddress,
-        privateKey: privateKey, // In production, this should be encrypted
+        // Do not persist privateKey in plaintext
         encryptedBackup,
         createdAt: new Date().toISOString(),
         status: 'active',
