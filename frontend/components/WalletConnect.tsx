@@ -291,7 +291,7 @@ export default function WalletConnect() {
           {createdAddress && (
             <div className="flex items-center gap-2 text-xs text-gray-600">
               Created/Imported: <span className="font-mono">{createdAddress}</span>
-              <Button size="xs" variant="outline" onClick={() => copy('address', createdAddress)}>Copy</Button>
+              <Button size="sm" variant="outline" onClick={() => copy('address', createdAddress)}>Copy</Button>
               {copied === 'address' && <span className="text-green-600">Copied!</span>}
             </div>
           )}
@@ -325,7 +325,7 @@ export default function WalletConnect() {
                   <span className="font-mono text-xs text-gray-700 truncate max-w-32">
                     {walletService.getAccountAddress()}
                   </span>
-                  <Button size="xs" variant="outline" onClick={() => copy('connected-address', walletService.getAccountAddress())}>Copy</Button>
+                  <Button size="sm" variant="outline" onClick={() => copy('connected-address', walletService.getAccountAddress())}>Copy</Button>
                 </div>
               </div>
             </div>
