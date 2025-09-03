@@ -7,6 +7,7 @@
     "start": "./start.sh",
     "dev": "./start.sh",
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "postinstall": "cd frontend && npm install",
     "build": "cd frontend && npm run build",
     "test:backend": "cd backend && npm test",
     "test:frontend": "cd frontend && npm test",
