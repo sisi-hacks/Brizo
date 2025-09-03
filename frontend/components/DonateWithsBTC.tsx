@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Bitcoin, Heart, CheckCircle, X } from 'lucide-react'
 import { createPayment } from '@/lib/api'
+import { walletService } from '@/lib/wallet'
+import { sendSbtcTransfer } from '@/lib/sbtc'
 
 interface DonateWithsBTCProps {
   merchantId: string
@@ -11,6 +13,8 @@ interface DonateWithsBTCProps {
   presetAmounts?: number[]
   showCustomAmount?: boolean
 }
+
+type DonorEntry = { address: string; amount: number; txid: string; ts: number }
 
 export default function DonateWithsBTC({
   merchantId,
@@ -24,6 +28,14 @@ export default function DonateWithsBTC({
   const [isLoading, setIsLoading] = useState(false)
   const [showThankYou, setShowThankYou] = useState(false)
   const [donationId, setDonationId] = useState<string | null>(null)
+  const [history, setHistory] = useState<DonorEntry[]>([])
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('brizo_donations')
+      if (raw) setHistory(JSON.parse(raw))
+    } catch {}
+  }, [])
 
   const handleAmountSelect = (amount: number) => {
     setSelectedAmount(amount)
@@ -45,6 +57,11 @@ export default function DonateWithsBTC({
     return 0
   }
 
+  const persistHistory = (next: DonorEntry[]) => {
+    setHistory(next)
+    try { localStorage.setItem('brizo_donations', JSON.stringify(next)) } catch {}
+  }
+
   const handleDonation = async () => {
     const amount = getFinalAmount()
     
@@ -56,6 +73,10 @@ export default function DonateWithsBTC({
     setIsLoading(true)
 
     try {
+      // Trigger sBTC transfer via connected wallet (recipient can be env or merchant wallet)
+      const recipient = process.env.NEXT_PUBLIC_SBTC_RECIPIENT || 'ST1PQHQKV0RJXZFYVWE6CHS7NS4T3MG9XJVTQVAVSB'
+      const tx = await sendSbtcTransfer({ recipient, amount })
+
       const payment = await createPayment({
         amount,
         description: `Donation to ${merchantId}`,
@@ -65,6 +86,12 @@ export default function DonateWithsBTC({
 
       setDonationId(payment.paymentId)
       setShowThankYou(true)
+      
+      // Store donor history (address, amount, txid)
+      const addr = walletService.getAccountAddress?.() || 'anonymous'
+      const entry: DonorEntry = { address: addr, amount, txid: tx?.txId || payment.paymentId, ts: Date.now() }
+      const next = [entry, ...history].slice(0, 20)
+      persistHistory(next)
       
       // Reset form
       setSelectedAmount(null)
@@ -178,6 +205,22 @@ export default function DonateWithsBTC({
           </p>
         </div>
       </div>
+
+      {/* Donor History */}
+      {history.length > 0 && (
+        <div className={`mt-6 ${bgColor} border ${borderColor} rounded-lg p-4`}>
+          <h4 className={`text-sm font-semibold ${textColor} mb-3`}>Recent Donations</h4>
+          <ul className="space-y-2">
+            {history.map((h, idx) => (
+              <li key={`${h.txid}-${idx}`} className="text-sm flex items-center justify-between">
+                <span className="font-mono truncate max-w-[50%]">{h.address}</span>
+                <span className="text-gray-500">{new Date(h.ts).toLocaleString()}</span>
+                <span className="font-medium">{h.amount} sBTC</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Thank You Modal */}
       {showThankYou && (

@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Suspense } from "react"
 import "./globals.css"
+import ConnectWalletButton from "@/components/ConnectWalletButton"
 
 export const metadata: Metadata = {
   title: "Brizo - Seamless Bitcoin Payments",
@@ -24,6 +25,9 @@ export default function RootLayout({
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <Suspense fallback={null}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+            <div className="w-full flex items-center justify-end p-4">
+              <ConnectWalletButton />
+            </div>
             {children}
           </ThemeProvider>
         </Suspense>
