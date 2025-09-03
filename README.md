@@ -33,7 +33,7 @@ Note on sBTC: the official sBTC rollout is staged. Brizo ships with a clear Demo
 ## Quick start (local)
 1) Prereqs
 - Node 18+
-- Hiro or Xverse wallet (set to Testnet)
+- Leather or Xverse wallet (set to Testnet)
 
 2) Run the app
 ```bash
@@ -104,6 +104,3 @@ No code changes needed.
 - Webhooks for merchant servers (signed)
 - Minimal merchant dashboard
 - sBTC main testnet flip as soon as it’s available
-
-## License
-MIT. Build cool stuff. 💧
