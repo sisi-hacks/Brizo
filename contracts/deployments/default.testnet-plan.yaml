@@ -1,0 +1,39 @@
+---
+id: 0
+name: Testnet deployment
+network: testnet
+stacks-node: "https://api.testnet.hiro.so"
+bitcoin-node: "http://blockstack:blockstacksystem@bitcoind.testnet.stacks.co:18332"
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - contract-publish:
+            contract-name: brizo-payments
+            expected-sender: ST8RD9HSE5EZ2X65G93SE1B4KTFRBHJS9KDVGT4F
+            cost: 137826977
+            path: brizo-payments.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: brizo-sbtc-integration
+            expected-sender: ST8RD9HSE5EZ2X65G93SE1B4KTFRBHJS9KDVGT4F
+            cost: 137555081
+            path: brizo-sbtc-integration.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: brizo-trait
+            expected-sender: ST8RD9HSE5EZ2X65G93SE1B4KTFRBHJS9KDVGT4F
+            cost: 137357337
+            path: brizo-trait.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: deploy
+            expected-sender: ST8RD9HSE5EZ2X65G93SE1B4KTFRBHJS9KDVGT4F
+            cost: 136764108
+            path: deploy.clar
+            anchor-block-only: true
+            clarity-version: 1
+      epoch: "2.05"

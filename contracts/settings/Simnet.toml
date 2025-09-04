@@ -1,0 +1,13 @@
+[network]
+name = "simnet"
+deployment_fee_rate = 10
+
+[accounts.deployer]
+address = "STC5KHM41H6WHAST7MWWDD807YSPRQKJ68T330BQ"
+balance = 1000000000000000
+
+[accounts.wallet_1]
+balance = 1000000000000000
+
+[accounts.wallet_2]
+balance = 1000000000000000

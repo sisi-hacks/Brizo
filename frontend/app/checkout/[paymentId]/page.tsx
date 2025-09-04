@@ -14,7 +14,6 @@ import WalletConnect from '@/components/WalletConnect'
 export default function CheckoutPage() {
   const params = useParams()
   const paymentId = params.paymentId as string
-  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
   
   const [payment, setPayment] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -141,14 +140,7 @@ export default function CheckoutPage() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Brizo
           </Link>
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-gray-900">Payment Checkout</h1>
-            {isDemoMode && (
-              <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
-                Demo Mode
-              </span>
-            )}
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Payment Checkout</h1>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">

@@ -1,0 +1,9 @@
+[network]
+name = "testnet"
+deployment_fee_rate = 10
+
+[accounts.deployer]
+private_key = ""
+balance = 1000000000000000
+
+address = "ST39G9NYAYW9KWVYHS1T12PAHX2ME2Z9W51KWAQG7"

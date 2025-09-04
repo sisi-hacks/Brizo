@@ -21,7 +21,7 @@ Spin up a payment link, drop a tiny widget anywhere, and let people pay from wal
 - Built‑in API routes: create a payment and go
 - Single Next.js app (frontend + API), testnet‑ready
 
-Note on sBTC: the official sBTC rollout is staged. Brizo ships with a clear Demo Mode using a SIP‑010 token so you can try the full flow today, then flip to real sBTC with envs later.
+Brizo sBTC contracts on Stacks testnet, providing Bitcoin backed payments with 1:1 BTC peg.
 
 ## What you get
 - Payment links with a checkout page (`/checkout/[id]`)
@@ -43,13 +43,13 @@ npm run dev
 ```
 Open http://localhost:3000
 
-3) Optional: Demo Mode
+3) Optional: Environment Configuration
 ```bash
 # frontend/.env.local
-NEXT_PUBLIC_DEMO_MODE=true
 NEXT_PUBLIC_STACKS_NETWORK=testnet
 NEXT_PUBLIC_APP_NAME=Brizo
 NEXT_PUBLIC_APP_ICON=/favicon.ico
+NEXT_PUBLIC_SBTC_RECIPIENT=ST1PQHQKV0RJXZFYVWE6CHS7NS4T3MG9XJVTQVAVSB
 ```
 
 ## Deploy (fastest way)
@@ -84,16 +84,38 @@ import PayWithsBTC from '@/components/PayWithsBTC'
 <PayWithsBTC amount={0.01} description="T‑shirt" merchantId="merchant123" />
 ```
 
-## Switch to real sBTC (when live)
-Flip from Demo Mode to the official sBTC contract with envs:
+## Smart Contract Deployment
+
+Brizo smart contracts are deployed on Stacks testnet:
+
+### **Contract Addresses:**
+- **Deployment Address**: `STC5KHM41H6WHAST7MWWDD807YSPRQKJ68T330BQ`
+- **brizo-payments**: `STC5KHM41H6WHAST7MWWDD807YSPRQKJ68T330BQ.brizo-payments`
+- **brizo-trait**: `STC5KHM41H6WHAST7MWWDD807YSPRQKJ68T330BQ.brizo-trait`
+- **brizo-sbtc-integration**: `STC5KHM41H6WHAST7MWWDD807YSPRQKJ68T330BQ.brizo-sbtc-integration`
+- **deploy**: `STC5KHM41H6WHAST7MWWDD807YSPRQKJ68T330BQ.deploy`
+
+### **Network**: Stacks Testnet
+- **Explorer**: https://explorer.hiro.so/
+- **Status**: Deployed and verified
+
+## sBTC Integration
+Brizo uses the official sBTC contracts on Stacks testnet:
+- **Contract Address**: `SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4`
+- **Token Name**: `sbtc-token`
+- **Standard**: SIP-010 fungible token
+- **Network**: Stacks Testnet (ready for mainnet when available)
+
+### Testnet: Fund & Deploy (one command)
 ```bash
-NEXT_PUBLIC_DEMO_MODE=false
-NEXT_PUBLIC_SBTC_CONTRACT_ADDRESS=SPXXXX...
-NEXT_PUBLIC_SBTC_CONTRACT_NAME=sbtc-token
-NEXT_PUBLIC_SBTC_TRANSFER_FN=transfer
-NEXT_PUBLIC_STACKS_NETWORK=testnet
+# Use Clarinet’s deployer (auto-detected), auto-fund via faucet API, deploy:
+npm run fund:deploy
+
+# If you want to deploy with your own private key (temporary override):
+CUSTOM_PRIVATE_KEY=0xYOUR_PRIVATE_KEY npm run deploy:custom
 ```
-No code changes needed.
+
+The integration follows the [official sBTC documentation](https://docs.stacks.co/concepts/sbtc) and uses real Bitcoin-backed tokens.
 
 ## FAQ
 - Do I need a separate backend? No. Next.js API routes handle it.
@@ -103,4 +125,4 @@ No code changes needed.
 ## Roadmap (short)
 - Webhooks for merchant servers (signed)
 - Minimal merchant dashboard
-- sBTC main testnet flip as soon as it’s available
+- Mainnet deployment when sBTC mainnet is live

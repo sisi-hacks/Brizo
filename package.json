@@ -4,6 +4,8 @@
   "description": "Brizo — Flowing Bitcoin Payments, Effortlessly",
   "main": "README.md",
   "scripts": {
+    "fund:deploy": "bash scripts/brizo-stacks-deploy.sh",
+    "deploy:custom": "bash scripts/brizo-stacks-deploy.sh --use-custom-key",
     "start": "./start.sh",
     "dev": "./start.sh",
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
@@ -12,6 +14,10 @@
     "test:backend": "cd backend && npm test",
     "test:frontend": "cd frontend && npm test",
     "test": "npm run test:backend && npm run test:frontend",
+    "test:contracts": "vitest run",
+    "test:contracts:watch": "vitest",
+    "test:contracts:coverage": "vitest run --coverage",
+    "test:contracts:dev": "vitest",
     "clean": "rm -rf backend/node_modules frontend/node_modules backend/.next frontend/.next",
     "backend": "cd backend && npm run dev",
     "frontend": "cd frontend && npm run dev"
@@ -39,5 +45,10 @@
   "bugs": {
     "url": "https://github.com/your-username/brizo/issues"
   },
-  "homepage": "https://github.com/your-username/brizo#readme"
+  "homepage": "https://github.com/your-username/brizo#readme",
+  "dependencies": {
+    "@hirosystems/clarinet-sdk": "^2.16.0",
+    "@stacks/transactions": "^7.2.0",
+    "vitest": "^3.2.4"
+  }
 }

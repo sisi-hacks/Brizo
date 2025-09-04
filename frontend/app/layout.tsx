@@ -20,18 +20,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <Suspense fallback={null}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-            <div className="w-full flex items-center justify-end p-4 gap-2">
-              {isDemoMode && (
-                <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
-                  Demo Mode (SIP-010)
-                </span>
-              )}
+            <div className="w-full flex items-center justify-end p-4">
               <ConnectWalletButton />
             </div>
             {children}

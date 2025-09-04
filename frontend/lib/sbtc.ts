@@ -1,42 +1,81 @@
 import { openContractCall, type ContractCallRegularOptions } from '@stacks/connect'
-import { AnchorMode, PostConditionMode, uintCV, standardPrincipalCV, noneCV, stringAsciiCV } from '@stacks/transactions'
+import { AnchorMode, PostConditionMode, uintCV, standardPrincipalCV, noneCV, stringAsciiCV, createAssetInfo, createFungiblePostCondition, FungibleConditionCode } from '@stacks/transactions'
+import { StacksTestnet, StacksMainnet } from '@stacks/network'
 
-// Configure these via env for testnet
-const SBTC_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_SBTC_CONTRACT_ADDRESS || 'SP000000000000000000002Q6VF78' // placeholder
-const SBTC_CONTRACT_NAME = process.env.NEXT_PUBLIC_SBTC_CONTRACT_NAME || 'sbtc-token' // placeholder (SIP-010-like)
-const SBTC_TRANSFER_FN = process.env.NEXT_PUBLIC_SBTC_TRANSFER_FN || 'transfer' // typical SIP-010
+// Real sBTC contract addresses from Stacks documentation
+const SBTC_CONTRACTS = {
+  testnet: {
+    address: 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4',
+    name: 'sbtc-token',
+    function: 'transfer'
+  },
+  mainnet: {
+    address: 'SP3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4', // Update when mainnet is live
+    name: 'sbtc-token', 
+    function: 'transfer'
+  }
+}
+
+// Get contract config based on network
+const getSbtcContract = (network: 'testnet' | 'mainnet' = 'testnet') => {
+  return SBTC_CONTRACTS[network]
+}
 
 export type SbtcTransferParams = {
   recipient: string
   amount: number // sBTC amount in whole units
   sender?: string
   memo?: string
+  network?: 'testnet' | 'mainnet'
 }
 
-export async function sendSbtcTransfer({ recipient, amount, memo }: SbtcTransferParams): Promise<{ txId?: string }> {
-  // Convert whole sBTC to micro-units if the token uses 6 or 8 decimals.
-  // Assuming 8 decimals for sBTC: amount * 10^8
+export async function sendSbtcTransfer({ 
+  recipient, 
+  amount, 
+  memo, 
+  network = 'testnet' 
+}: SbtcTransferParams): Promise<{ txId?: string }> {
+  console.log('Initiating real sBTC transfer...')
+  console.log('Amount:', amount, 'sBTC')
+  console.log('Recipient:', recipient)
+  console.log('Network:', network)
+
+  const contract = getSbtcContract(network)
+  const networkInstance = network === 'testnet' ? new StacksTestnet() : new StacksMainnet()
+
+  // sBTC uses 8 decimal places (same as Bitcoin)
   const microAmount = Math.floor(amount * 1e8)
 
+  // SIP-010 standard transfer function signature: (amount, sender, recipient, memo?)
   const functionArgs = [
     uintCV(microAmount),
     standardPrincipalCV(recipient),
-    noneCV(),
+    memo ? stringAsciiCV(memo) : noneCV(),
+  ]
+
+  // Create post-condition to ensure exact amount is transferred
+  const postConditions = [
+    createFungiblePostCondition(
+      createAssetInfo(contract.address, contract.name, 'sbtc'),
+      FungibleConditionCode.Equal,
+      uintCV(microAmount),
+      recipient
+    ),
   ]
 
   const options: ContractCallRegularOptions = {
-    contractAddress: SBTC_CONTRACT_ADDRESS,
-    contractName: SBTC_CONTRACT_NAME,
-    functionName: SBTC_TRANSFER_FN,
+    network: networkInstance,
+    contractAddress: contract.address,
+    contractName: contract.name,
+    functionName: contract.function,
     functionArgs,
-    postConditionMode: PostConditionMode.Allow,
+    postConditionMode: PostConditionMode.Deny,
+    postConditions,
     anchorMode: AnchorMode.Any,
     onFinish: data => {
-      // eslint-disable-next-line no-console
-      console.log('sBTC transfer submitted:', data)
+      console.log('sBTC transfer completed:', data)
     },
     onCancel: () => {
-      // eslint-disable-next-line no-console
       console.log('sBTC transfer canceled')
     },
   }

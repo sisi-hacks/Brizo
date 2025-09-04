@@ -1,0 +1,33 @@
+[project]
+name = "brizo-payments"
+description = "Brizo Payment Gateway Smart Contracts"
+version = "0.1.0"
+
+[contracts]
+brizo-sbtc-integration = { path = "brizo-sbtc-integration.clar" }
+brizo-payments = { path = "brizo-payments.clar" }
+brizo-trait = { path = "brizo-trait.clar" }
+deploy = { path = "deploy.clar" }
+
+[requirements]
+SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token = { git = "https://github.com/hirosystems/sbtc", tag = "v0.1.0" }
+SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-registry = { git = "https://github.com/hirosystems/sbtc", tag = "v0.1.0" }
+SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-deposit = { git = "https://github.com/hirosystems/sbtc", tag = "v0.1.0" }
+
+[networks]
+local = { name = "local", endpoint = "http://localhost:20443" }
+testnet = { name = "testnet", endpoint = "https://api.testnet.hiro.so" }
+mainnet = { name = "mainnet", endpoint = "https://api.hiro.so" }
+
+[accounts]
+deployer = { address = "STC5KHM41H6WHAST7MWWDD807YSPRQKJ68T330BQ", balance = 1000000000000000 }
+
+[devnet]
+disable_stacks_explorer = false
+disable_stacks_api = false
+working_dir = "devnet"
+use_alt_stacks_node = false
+
+[settings]
+disable_stacks_explorer = false
+disable_stacks_api = false

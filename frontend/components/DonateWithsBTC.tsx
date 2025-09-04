@@ -73,9 +73,14 @@ export default function DonateWithsBTC({
     setIsLoading(true)
 
     try {
-      // Trigger sBTC transfer via connected wallet (recipient can be env or merchant wallet)
+      // Trigger real sBTC transfer via connected wallet
       const recipient = process.env.NEXT_PUBLIC_SBTC_RECIPIENT || 'ST1PQHQKV0RJXZFYVWE6CHS7NS4T3MG9XJVTQVAVSB'
-      const tx = await sendSbtcTransfer({ recipient, amount })
+      const tx = await sendSbtcTransfer({ 
+        recipient, 
+        amount, 
+        memo: `Donation to ${merchantId}`,
+        network: 'testnet' 
+      })
 
       const payment = await createPayment({
         amount,
